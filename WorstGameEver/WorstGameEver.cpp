@@ -14,8 +14,8 @@ namespace MathUtils {
 }
 
 
-const int BASE_WIDTH = 1280;
-const int BASE_HEIGHT = 720;
+const int BASE_WIDTH = 2560;
+const int BASE_HEIGHT = 1440;
 
 
 struct Platform {
