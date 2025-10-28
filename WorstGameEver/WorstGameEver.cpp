@@ -38,7 +38,7 @@ struct Enemy {
     bool rollingRight = false;
 
     Enemy(const std::vector<Platform>& plats) {
-        currentPlatform = (int)plats.size() - 1; // top platform
+        currentPlatform = (int)plats.size() - 1; 
         const auto& top = plats[currentPlatform];
         pos = { top.rect.x + top.rect.width - radius, top.rect.y - radius * 2 };
         vel = { -100, 0 };
@@ -201,7 +201,7 @@ int main() {
         float dt = GetFrameTime();
 
         if (state == MENU) {
-            // Name input
+            
             int key = GetCharPressed();
             while (key > 0) {
                 if (letterCount < 31 && key >= 32 && key <= 125) {
