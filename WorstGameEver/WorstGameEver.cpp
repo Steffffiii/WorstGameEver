@@ -68,7 +68,8 @@ struct Player {
 struct ScoreManager { std::string name; int score; struct E { std::string n; int s; }; std::vector<E> hs; void Load() { hs.clear(); std::ifstream f("scores.txt"); std::string line; while (std::getline(f, line)) { std::stringstream ss(line); E e; ss >> e.n >> e.s; if (e.n.size()) hs.push_back(e); } } void Save() { hs.push_back({ name,score }); std::sort(hs.begin(), hs.end(), [](const E& a, const E& b) {return a.s > b.s;}); if (hs.size() > 5) hs.resize(5); std::ofstream o("scores.txt"); for (auto& e : hs) o << e.n << " " << e.s << "\n"; } };
 
 
-int main() {
+int main()
+{
 	InitWindow(1280, 720, "Donkey Kong - Full"); SetTargetFPS(60);
 	Texture2D texPlayer = LoadTexture("player_spritesheet.png");
 	Texture2D texBarrel = LoadTexture("barrel.png");
@@ -116,3 +117,4 @@ int main() {
 
 		return 0;
 	}
+}
