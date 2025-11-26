@@ -1,12 +1,4 @@
-﻿/********************************************************************
-  ApeClimb — Donkey-Kong–style original game
-  FULL FIXED VERSION (with ladder-drop barrels + hammer power-up)
-   - No Vector2 operators (uses raymath)
-   - Barrels correctly roll and no longer get stuck
-   - Smooth ladder climbing (player can climb fully onto platforms)
-   - Barrels randomly drop down ladders
-   - Hammer power-up: pickup, 10s duration, destroys barrels on contact
- ********************************************************************/
+﻿
 
 #include "raylib.h"
 #include "raymath.h"
@@ -14,9 +6,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
-#include <algorithm> // for remove_if
+#include <algorithm> 
 
- // ---------------------------------------------------------
+
 const int SCREEN_W = 800;
 const int SCREEN_H = 720;
 const int FPS = 60;
@@ -33,7 +25,7 @@ struct Barrel {
 
 enum PlayerState { PS_GROUND, PS_JUMP, PS_CLIMB, PS_FALL };
 
-// ---------------------------------------------------------
+
 std::vector<Platform> platforms;
 std::vector<Ladder> ladders;
 std::vector<Barrel> barrels;
@@ -60,13 +52,13 @@ Vector2 apePos;
 float barrelTimer = 0;
 float barrelInterval = 2.0f;
 
-// Hammer power-up globals
-bool hammerActive = false;       // is player currently wielding hammer?
-float hammerTimeLeft = 0.0f;    // seconds left for active hammer
-bool hammerExists = false;      // is hammer available to pick up on the level?
-Rectangle hammerPickup = { 0,0,0,0 }; // pickup rect
 
-// ---------------------------------------------------------
+bool hammerActive = false;       
+float hammerTimeLeft = 0.0f;    
+bool hammerExists = false;     
+Rectangle hammerPickup = { 0,0,0,0 }; 
+
+
 bool CheckRectCollision(const RectF& a, const RectF& b) {
     return !(a.x + a.w < b.x || b.x + b.w < a.x ||
         a.y + a.h < b.y || b.y + b.h < a.y);
@@ -100,8 +92,6 @@ int LadderUnderPlayerIndex() {
     }
     return -1;
 }
-
-// Returns true and sets outIndex when barrel overlaps a ladder rect
 bool BarrelOnLadder(const Barrel& b, int& outIndex) {
     Rectangle br{ b.pos.x, b.pos.y, b.size, b.size };
     for (int i = 0; i < (int)ladders.size(); ++i) {
@@ -114,7 +104,7 @@ bool BarrelOnLadder(const Barrel& b, int& outIndex) {
     return false;
 }
 
-// ---------------------------------------------------------
+
 void BuildLevel(int level) {
     platforms.clear();
     ladders.clear();
@@ -142,10 +132,10 @@ void BuildLevel(int level) {
         platforms.push_back(p);
     }
 
-    // Floor
+  
     platforms.push_back({ {0, SCREEN_H - 40, SCREEN_W, 40}, false, 0 });
 
-    // Ladders
+    
     for (int i = 0; i < rows; i++) {
         float topY = SCREEN_H - 100 - i * gap;
         float bottomY = (i == 0)
@@ -157,11 +147,11 @@ void BuildLevel(int level) {
         ladders.push_back({ {lx, topY + ph, 36, bottomY - topY - ph} });
     }
 
-    // Ape
+   
     apePos.x = (level % 2 == 1) ? 100 : SCREEN_W - 140;
     apePos.y = SCREEN_H - 100 - (rows - 1) * gap - 60;
 
-    // Player
+    
     playerPos = { 50, SCREEN_H - 40 - PLAYER_H };
     playerVel = { 0, 0 };
     pState = PS_GROUND;
@@ -169,13 +159,13 @@ void BuildLevel(int level) {
     barrelTimer = 0;
     barrelInterval = 2.0f;
 
-    // Hammer: place on a mid platform (index 2) if it exists
+    
     if ((int)platforms.size() > 2) {
-        Platform& plat = platforms[2]; // mid-level placement
+        Platform& plat = platforms[2]; 
         hammerPickup.width = 28;
         hammerPickup.height = 28;
         hammerPickup.x = plat.r.x + plat.r.w * 0.5f - hammerPickup.width * 0.5f;
-        hammerPickup.y = plat.r.y - hammerPickup.height; // sit on top of platform
+        hammerPickup.y = plat.r.y - hammerPickup.height; 
         hammerExists = true;
         hammerActive = false;
         hammerTimeLeft = 0.0f;
@@ -185,7 +175,7 @@ void BuildLevel(int level) {
     }
 }
 
-// ---------------------------------------------------------
+
 void SpawnBarrel() {
     Barrel b;
     b.pos = { apePos.x + 40, apePos.y + 20 };
@@ -205,32 +195,32 @@ void UpdateBarrels(float dt) {
     for (auto& b : barrels) {
         if (!b.active) continue;
 
-        // gravity
+        
         b.vel.y += GRAVITY * dt;
 
-        // Barrel ladder-drop logic (if currently rolling and overlapping ladder)
-        // Only attempt drop when there is significant horizontal movement (rolling)
+       
+        
         if (fabs(b.vel.x) > 20.0f && fabs(b.vel.y) < 200.0f) {
             int ladIdx = -1;
             if (BarrelOnLadder(b, ladIdx)) {
-                // 25% chance to drop
+                
                 if ((rand() % 100) < 25) {
                     b.vel.x = 0;
-                    b.vel.y = 250; // start falling down ladder
-                    // Move barrel slightly into ladder center to avoid repeated re-detection
+                    b.vel.y = 250; 
+                  
                     if (ladIdx >= 0 && ladIdx < (int)ladders.size()) {
                         float ladderCenterX = ladders[ladIdx].r.x + ladders[ladIdx].r.w * 0.5f - b.size * 0.5f;
                         b.pos.x = ladderCenterX;
                     }
-                    // continue with physics (will be moved below)
+                    
                 }
             }
         }
 
-        // move
+        
         b.pos = Vector2Add(b.pos, Vector2Scale(b.vel, dt));
 
-        // platform collisions
+        
         for (auto& pl : platforms) {
             RectF r = pl.r;
 
@@ -245,11 +235,11 @@ void UpdateBarrels(float dt) {
                     feet >= r.y &&
                     feet <= r.y + 10) {
 
-                    // land
+                    
                     b.pos.y = r.y - b.size;
                     b.vel.y = 0;
 
-                    // Roll logic (improved so barrels don't freeze)
+                    
                     if (b.pos.x <= r.x + 4) b.vel.x = 140;
                     if (b.pos.x + b.size >= r.x + r.w - 4) b.vel.x = -140;
 
@@ -260,15 +250,13 @@ void UpdateBarrels(float dt) {
             }
         }
 
-        // kill barrel off screen
+        
         if (b.pos.x < -100 || b.pos.x > SCREEN_W + 100 ||
             b.pos.y > SCREEN_H + 200) {
             b.active = false;
         }
     }
 }
-
-// ---------------------------------------------------------
 void UpdatePlayer(float dt) {
     bool left = IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A);
     bool right = IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D);
@@ -279,44 +267,44 @@ void UpdatePlayer(float dt) {
     int ladderIdx = LadderUnderPlayerIndex();
     bool onLadder = ladderIdx != -1;
 
-    // ---------------- CLIMBING MODE ----------------
+    
     if ((onLadder && (up || down)) || pState == PS_CLIMB) {
         pState = PS_CLIMB;
 
         if (up)   playerPos.y -= CLIMB_SPEED * dt;
         if (down) playerPos.y += CLIMB_SPEED * dt;
 
-        // Jump cancels
+       
         if (jumpKey) {
             pState = PS_JUMP;
             playerVel.y = -PLAYER_JUMP;
             return;
         }
 
-        // Check platform under chest to exit climb smoothly
+        
         RectF under;
         bool atPlat = PlayerOnPlatform(under);
         float chestY = playerPos.y + PLAYER_H * 0.3f;
 
         if (atPlat && chestY < under.y) {
-            // still valid climbing
+            
         }
         else if (atPlat) {
-            // fully on platform
+            
             pState = PS_GROUND;
             playerPos.y = under.y - PLAYER_H;
             return;
         }
 
-        // leave ladder only when completely off it
+        
         if (!onLadder && !atPlat) {
             pState = PS_FALL;
         }
 
-        return; // skip ground physics
+        return; 
     }
 
-    // ---------------- NORMAL MOVEMENT ----------------
+    
     float targetX = 0;
     if (left)  targetX = -PLAYER_SPEED;
     if (right) targetX = PLAYER_SPEED;
@@ -329,7 +317,7 @@ void UpdatePlayer(float dt) {
     if (playerPos.x < 0) playerPos.x = 0;
     if (playerPos.x + PLAYER_W > SCREEN_W) playerPos.x = SCREEN_W - PLAYER_W;
 
-    // Platform snap
+   
     RectF under;
     if (PlayerOnPlatform(under)) {
         float feet = playerPos.y + PLAYER_H;
@@ -360,7 +348,6 @@ void UpdatePlayer(float dt) {
     }
 }
 
-// ---------------------------------------------------------
 void CheckPlayerBarrelCollisions() {
     Rectangle pr{ playerPos.x, playerPos.y, PLAYER_W, PLAYER_H };
 
@@ -371,13 +358,13 @@ void CheckPlayerBarrelCollisions() {
 
         if (CheckCollisionRecs(pr, br)) {
             if (hammerActive) {
-                // destroy barrel and award points
+                
                 b.active = false;
                 score += 100;
                 continue;
             }
 
-            // Normal damage
+            
             lives--;
             score = score > 50 ? score - 50 : 0;
 
@@ -396,7 +383,7 @@ bool CheckWinCondition() {
     return false;
 }
 
-// ---------------------------------------------------------
+
 void DrawPlayer() {
     DrawRectangleV(playerPos, { PLAYER_W, PLAYER_H }, MAROON);
 
@@ -406,7 +393,7 @@ void DrawPlayer() {
     DrawRectangleLines((int)playerPos.x, (int)playerPos.y,
         (int)PLAYER_W, (int)PLAYER_H, BLACK);
 
-    // Hammer swing visual (when active)
+    
     if (hammerActive) {
         Vector2 swingPos = Vector2Add(playerPos, { PLAYER_W + 8, PLAYER_H * 0.3f });
         DrawCircleV(swingPos, 14, GOLD);
@@ -444,7 +431,6 @@ void DrawPlatformsAndLadders() {
         }
     }
 
-    // Draw hammer pickup (if available)
     if (hammerExists && !hammerActive) {
         DrawRectangleRec(hammerPickup, GOLD);
         DrawText("H", (int)hammerPickup.x + 6, (int)hammerPickup.y + 4, 18, DARKBROWN);
@@ -460,7 +446,7 @@ void DrawBarrels() {
     }
 }
 
-// ---------------------------------------------------------
+
 int main() {
     InitWindow(SCREEN_W, SCREEN_H, "ApeClimb");
     SetTargetFPS(FPS);
@@ -482,15 +468,15 @@ int main() {
         UpdatePlayer(dt);
         UpdateBarrels(dt);
 
-        // Check hammer pickup by player
+        
         Rectangle pr{ playerPos.x, playerPos.y, PLAYER_W, PLAYER_H };
         if (hammerExists && !hammerActive && CheckCollisionRecs(pr, hammerPickup)) {
             hammerActive = true;
-            hammerTimeLeft = 10.0f; // seconds of hammer
+            hammerTimeLeft = 10.0f; 
             hammerExists = false;
         }
 
-        // Hammer timer update
+      
         if (hammerActive) {
             hammerTimeLeft -= dt;
             if (hammerTimeLeft <= 0.0f) {
@@ -532,7 +518,7 @@ int main() {
         DrawText("Move: A/D or ←/→   Jump: SPACE   Climb: W/S or ↑/↓",
             10, SCREEN_H - 24, 14, GRAY);
 
-        // Draw hammer HUD when active
+        
         if (hammerActive) {
             DrawText(TextFormat("HAMMER: %.1fs", hammerTimeLeft), 12, 36, 18, ORANGE);
         }
