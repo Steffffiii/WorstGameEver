@@ -1,5 +1,5 @@
 Aasta 1770
 albert 900
 stefanos 780
+Player 660
 stefanos 630
-Player 540
